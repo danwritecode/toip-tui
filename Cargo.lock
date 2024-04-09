@@ -257,15 +257,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ratatui-fun"
-version = "0.1.0"
-dependencies = [
- "crossterm",
- "ratatui",
- "textwrap",
-]
-
-[[package]]
 name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -404,6 +395,20 @@ dependencies = [
  "unicode-linebreak",
  "unicode-width",
 ]
+
+[[package]]
+name = "toip-tui"
+version = "0.1.0"
+dependencies = [
+ "crossterm",
+ "ratatui",
+ "textwrap",
+ "udp_toip",
+]
+
+[[package]]
+name = "udp_toip"
+version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"
