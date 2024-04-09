@@ -9,4 +9,4 @@ edition = "2021"
 crossterm = "0.27.0"
 ratatui = "0.26.1"
 textwrap = "0.16.1"
-udp_toip = { path = "../udp_toip" }
+udp_toip = { git = "https://github.com/danwritecode/rust_udp_chat_server" }

@@ -409,6 +409,7 @@ dependencies = [
 [[package]]
 name = "udp_toip"
 version = "0.1.0"
+source = "git+https://github.com/danwritecode/rust_udp_chat_server#56504825a5344489d096cab471c273e2fce6e3d9"
 
 [[package]]
 name = "unicode-ident"
