@@ -1,4 +1,5 @@
-use std::{env, io::{self, stdout}, sync::{Arc, Mutex}};
+use std::{env, io::{self, stdout}, sync::{Arc, Mutex}, time::Duration};
+use std::time::SystemTime;
 
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
@@ -57,45 +58,42 @@ fn start_client(address: String, username: String) -> io::Result<()> {
     let client = ToipClient::new(address, username);
     client.init()?;
 
-    let mut prev_message_buffer_size = 0;
-
     loop {
-        let current_message_buffer_size = client.message_buffer.lock().unwrap().clone().len();
-        if current_message_buffer_size > prev_message_buffer_size {
-            terminal.flush()?;
-            prev_message_buffer_size = current_message_buffer_size;
-        }
+        terminal.draw(|frame| ui(frame, &mut app, &client.message_buffer))?;
 
-        terminal.draw(|frame| ui(frame, &mut app, client.message_buffer.clone()))?;
-
-        if let Event::Key(key) = event::read()? {
-            match app.input_mode {
-                InputMode::Normal => match key.code {
-                    KeyCode::Char('q') => {
-                        break;
-                    }
-                    _ => {}
-                },
-                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
-                    KeyCode::Enter => app.submit_message(&client)?,
-                    KeyCode::Char(to_insert) => {
-                        app.enter_char(to_insert);
-                    }
-                    KeyCode::Backspace => {
-                        app.delete_char();
-                    }
-                    KeyCode::Left => {
-                        app.move_cursor_left();
-                    }
-                    KeyCode::Right => {
-                        app.move_cursor_right();
-                    }
-                    KeyCode::Esc => {
-                        app.input_mode = InputMode::Normal;
-                    }
-                    _ => {}
-                },
-                InputMode::Editing => {}
+        if event::poll(Duration::from_millis(10))? {
+            if let Event::Key(key) = event::read()? {
+                match app.input_mode {
+                    InputMode::Normal => match key.code {
+                        KeyCode::Char('q') => {
+                            break;
+                        }
+                        KeyCode::Char('i') => {
+                            app.input_mode = InputMode::Editing;
+                        }
+                        _ => {}
+                    },
+                    InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
+                        KeyCode::Enter => app.submit_message(&client)?,
+                        KeyCode::Char(to_insert) => {
+                            app.enter_char(to_insert);
+                        }
+                        KeyCode::Backspace => {
+                            app.delete_char();
+                        }
+                        KeyCode::Left => {
+                            app.move_cursor_left();
+                        }
+                        KeyCode::Right => {
+                            app.move_cursor_right();
+                        }
+                        KeyCode::Esc => {
+                            app.input_mode = InputMode::Normal;
+                        }
+                        _ => {}
+                    },
+                    InputMode::Editing => {}
+                }
             }
         }
     }
@@ -109,7 +107,7 @@ fn start_client(address: String, username: String) -> io::Result<()> {
 fn ui(
     frame: &mut Frame, 
     app: &mut App, 
-    messages: Arc<Mutex<Vec<udp_toip::Message>>>
+    messages: &Arc<Mutex<Vec<udp_toip::Message>>>
 ) {
     let mut messages = messages.lock().unwrap();
     let width = frame.size().width as usize;
